@@ -30,6 +30,22 @@ _inputBuffer:
 	dec rax
     ret
 
+_inputOperationChar:
+    mov rax, SYS_READ
+    mov rdi, FD_STDIN
+    mov rsi, operationChar
+    mov rdx, 1
+    syscall
+    ret
+
+_inputDummy:
+    mov rax, SYS_READ
+    mov rdi, FD_STDIN
+    mov rsi, dummy
+    mov rdx, 1
+    syscall
+    ret
+
 %macro exit 1
 	mov rax, 60
 	mov rdi, %1
@@ -42,6 +58,8 @@ section .data
     printBuffer: db "0000000000", 0xa 
 
 section .bss
+    operationChar: resb 1
+    dummy: resb 1
     buffer: resb BUFSIZ
 
 section .text
@@ -59,14 +77,28 @@ _mainLoop:
     call _convertBufferToInteger2
     mov r15, rax
 
+    call _inputOperationChar
+    call _inputDummy
+
     call _inputBuffer 
     call _convertBufferToInteger2
     mov r14, rax
 
+    cmp byte [operationChar], '+'
+    jne .LL1
     add r15, r14
     printInt r15
+    jmp _mainLoop
+.LL1:
+    cmp byte [operationChar], '-'
+    jne .LL2
+    sub r15, r14
+    printInt r15
+    jmp _mainLoop
+.LL2:
 
-    ret
+    call _clearPrintBuffer
+    jmp _mainLoop
 
 ; _convertBufferToInteger Converts a string view of an integer
 ; to real integer and leaves it in a register
