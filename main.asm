@@ -96,7 +96,24 @@ _mainLoop:
     printInt r15
     jmp _mainLoop
 .LL2:
+    cmp byte [operationChar], '*'
+    jne .LL3
+    imul r15, r14
+    printInt r15
+    jmp _mainLoop
+.LL3:
+    cmp byte [operationChar], '/'
+    jne .LL4
 
+    mov rax, r15
+    xor rdx, rdx
+
+    div r14
+
+    mov r15, rax
+    printInt r15
+    jmp _mainLoop
+.LL4:
     call _clearPrintBuffer
     jmp _mainLoop
 
